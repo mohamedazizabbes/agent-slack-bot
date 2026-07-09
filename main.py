@@ -24,19 +24,28 @@ async def lifespan(_app: FastAPI):
 app = FastAPI(lifespan=lifespan, title="repo-agent-slack-bot")
 
 
+@app.get("/")
+async def root():
+    return {"status": "ok"}
+
+
 @app.post("/slack/events")
 async def slack_events(request: Request):
     body = await request.body()
+
+    # Slack URL verification — sent without signature headers
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+    if payload.get("challenge"):
+        return PlainTextResponse(payload["challenge"])
+
     timestamp = request.headers.get("X-Slack-Request-Timestamp", "")
     signature = request.headers.get("X-Slack-Signature", "")
 
     if not verify_signature(body, timestamp, signature):
         raise HTTPException(status_code=403, detail="Invalid signature")
-
-    payload = await request.json()
-
-    if "challenge" in payload:
-        return PlainTextResponse(payload["challenge"])
 
     event = payload.get("event", {})
     if event.get("type") == "app_mention":
