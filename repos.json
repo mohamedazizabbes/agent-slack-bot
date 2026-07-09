@@ -1,3 +1,22 @@
 {
-  "reservi": "https://github.com/taheroo/reservi-backend-api"
+  "reservi": "https://github.com/taheroo/reservi-backend-api",
+  "reservi-backend-api": "https://github.com/taheroo/reservi-backend-api",
+  "code-explainer": "https://github.com/taheroo/code-explainer",
+  "taheroo-code-explainer": "https://github.com/taheroo/code-explainer",
+  "ask-agents": "https://github.com/taheroo/ask-agents",
+  "taheroo-ask-agents": "https://github.com/taheroo/ask-agents",
+  "agent-slack-bot": "https://github.com/mohamedazizabbes/agent-slack-bot",
+  "culprit": "https://github.com/mohamedazizabbes/CULPRIT_AINS",
+  "culprit-ains": "https://github.com/mohamedazizabbes/CULPRIT_AINS",
+  "devpost": "https://github.com/mohamedazizabbes/devpost_USAII",
+  "cli-codebase": "https://github.com/mohamedazizabbes/CLI_codebase",
+  "robot-health": "https://github.com/mohamedazizabbes/RobotHealth",
+  "telewatch": "https://github.com/anascherif/TeleWatch",
+  "line-follower": "https://github.com/Ahmedd-Ben-Salah/Line-Follower-Robot",
+  "titanic": "https://github.com/mohamedazizabbes/project_titanic",
+  "project-titanic": "https://github.com/mohamedazizabbes/project_titanic",
+  "final-rag": "https://github.com/mohamedazizabbes/final_rag",
+  "rag-demo": "https://github.com/mohamedazizabbes/rag_demo",
+  "4-repo-demo": "https://github.com/mohamedazizabbes/4_repo_demo",
+  "warcast": "https://github.com/mohamedazizabbes/WARCAST"
 }
