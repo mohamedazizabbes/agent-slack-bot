@@ -53,10 +53,15 @@ async def slack_events(request: Request):
         channel = event["channel"]
         thread_ts = event.get("ts")
 
-        # Parse: "@bot <repo> <question>"
-        parts = text.split(maxsplit=2)
-        target_repo = parts[1] if len(parts) >= 3 else "unknown"
-        question = parts[2] if len(parts) >= 3 else " ".join(parts[1:]) if len(parts) == 2 else text
+        # Strip bot mention (<@U12345>) and split
+        words = text.split()
+        words = [w for w in words if not w.startswith("<@")]
+        if len(words) < 2:
+            post_message(channel, "Usage: @Repo Agent <repo_name> <question>\nExample: @Repo Agent reservi what is this project?", thread_ts=thread_ts)
+            return {"ok": True}
+
+        target_repo = words[0]
+        question = " ".join(words[1:])
         session_id = f"slack:{channel}:{thread_ts or uuid.uuid4().hex}"
 
         import asyncio
