@@ -71,11 +71,13 @@ async def slack_events(request: Request):
         repo_name = _normalize(raw_repo)
 
         repos = _load_repos()
-        repo_url = repos.get(repo_name)
-        if not repo_url:
+        entry = repos.get(repo_name)
+        if not entry:
             known = ", ".join(f"/{k}" for k in repos)
             post_message(channel, f"Unknown repo /{raw_repo}. Known: {known}", thread_ts=thread_ts)
             return {"ok": True}
+
+        qdrant_name = entry.get("qdrant_name") if isinstance(entry, dict) else entry
 
         # Remove /repo_name token from text to get the question
         question = re.sub(r"/\S+", "", text, count=1).strip()
@@ -84,7 +86,7 @@ async def slack_events(request: Request):
 
         import asyncio
 
-        asyncio.create_task(_handle_query(channel, question, repo_name, session_id, thread_ts))
+        asyncio.create_task(_handle_query(channel, question, qdrant_name, session_id, thread_ts))
 
     return {"ok": True}
 
