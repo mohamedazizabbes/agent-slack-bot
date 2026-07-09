@@ -1,6 +1,8 @@
+import json
 import os
+import re
 import uuid
-from contextlib import asynccontextmanager
+from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, HTTPException
@@ -11,17 +13,19 @@ from rag_client import ask_rag
 
 load_dotenv()
 
-
-@asynccontextmanager
-async def lifespan(_app: FastAPI):
-    required = ["SLACK_BOT_TOKEN", "SLACK_SIGNING_SECRET", "RAG_BACKEND_URL"]
-    missing = [v for v in required if not os.getenv(v)]
-    if missing:
-        print(f"Missing env vars: {', '.join(missing)}")
-    yield
+REPOS_FILE = Path(__file__).parent / "repos.json"
 
 
-app = FastAPI(lifespan=lifespan, title="repo-agent-slack-bot")
+def _load_repos() -> dict[str, str]:
+    with open(REPOS_FILE) as f:
+        return json.load(f)
+
+
+def _normalize(name: str) -> str:
+    return name.lower().removesuffix(".git")
+
+
+app = FastAPI(title="repo-agent-slack-bot")
 
 
 @app.get("/")
@@ -33,7 +37,6 @@ async def root():
 async def slack_events(request: Request):
     body = await request.body()
 
-    # Slack URL verification — sent without signature headers
     try:
         payload = await request.json()
     except Exception:
@@ -53,20 +56,35 @@ async def slack_events(request: Request):
         channel = event["channel"]
         thread_ts = event.get("ts")
 
-        # Strip bot mention (<@U12345>) and split
-        words = text.split()
-        words = [w for w in words if not w.startswith("<@")]
-        if len(words) < 2:
-            post_message(channel, "Usage: @Repo Agent <repo_name> <question>\nExample: @Repo Agent reservi what is this project?", thread_ts=thread_ts)
+        # Strip bot mention (<@U12345>)
+        text = re.sub(r"<@\w+>", "", text).strip()
+
+        # Extract /repo_name from anywhere in the message
+        m = re.search(r"/(\S+)", text)
+        if not m:
+            known = ", ".join(f"/{k}" for k in _load_repos())
+            msg = f"Usage: @Repo Agent /repo_name your question\nKnown repos: {known}"
+            post_message(channel, msg, thread_ts=thread_ts)
             return {"ok": True}
 
-        target_repo = words[0]
-        question = " ".join(words[1:])
+        raw_repo = m.group(1)
+        repo_name = _normalize(raw_repo)
+
+        repos = _load_repos()
+        repo_url = repos.get(repo_name)
+        if not repo_url:
+            known = ", ".join(f"/{k}" for k in repos)
+            post_message(channel, f"Unknown repo /{raw_repo}. Known: {known}", thread_ts=thread_ts)
+            return {"ok": True}
+
+        # Remove /repo_name token from text to get the question
+        question = re.sub(r"/\S+", "", text, count=1).strip()
+
         session_id = f"slack:{channel}:{thread_ts or uuid.uuid4().hex}"
 
         import asyncio
 
-        asyncio.create_task(_handle_query(channel, question, target_repo, session_id, thread_ts))
+        asyncio.create_task(_handle_query(channel, question, repo_name, session_id, thread_ts))
 
     return {"ok": True}
 
