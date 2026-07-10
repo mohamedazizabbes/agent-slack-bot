@@ -10,7 +10,7 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import PlainTextResponse
 
 from slack_client import verify_signature, post_message
-from rag_client import ingest_repo, ingest_status, ask_rag
+from rag_client import ask_rag
 
 load_dotenv()
 
@@ -76,45 +76,18 @@ async def slack_events(request: Request):
             post_message(channel, f"Unknown repo /{raw_repo}. Known: {known}", thread_ts=thread_ts)
             return {"ok": True}
 
-        repo_url = entry.get("url") if isinstance(entry, dict) else None
         qdrant_name = entry.get("qdrant_name") if isinstance(entry, dict) else entry
 
         question = re.sub(r"/\S+", "", text, count=1).strip()
         session_id = f"slack:{channel}:{thread_ts or uuid.uuid4().hex}"
 
-        asyncio.create_task(
-            _handle_query(channel, question, qdrant_name, repo_url, session_id, thread_ts)
-        )
+        asyncio.create_task(_answer(channel, question, qdrant_name, session_id, thread_ts))
 
     return {"ok": True}
 
 
-async def _handle_query(
-    channel: str,
-    question: str,
-    target_repo: str,
-    repo_url: str | None,
-    session_id: str,
-    thread_ts: str | None,
+async def _answer(
+    channel: str, question: str, target_repo: str, session_id: str, thread_ts: str | None
 ):
-    # Step 1: ensure repo is indexed (only if GITHUB_TOKEN is available)
-    if repo_url and os.getenv("GITHUB_TOKEN"):
-        status = await ingest_repo(repo_url)
-        if status == "indexing":
-            post_message(
-                channel,
-                f"Indexing {target_repo} for the first time — this may take ~1 minute...",
-                thread_ts=thread_ts,
-            )
-            for _ in range(30):
-                await asyncio.sleep(2)
-                s = await ingest_status(target_repo)
-                if s == "ready":
-                    break
-        elif status not in ("ready", "ok"):
-            # ingest failed (cold start, etc.) — fall through to query anyway
-            pass
-
-    # Step 2: ask
     answer = await ask_rag(question, target_repo, session_id)
     post_message(channel, answer, thread_ts=thread_ts)
