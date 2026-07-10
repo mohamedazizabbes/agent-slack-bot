@@ -97,8 +97,8 @@ async def _handle_query(
     session_id: str,
     thread_ts: str | None,
 ):
-    # Step 1: ensure repo is indexed
-    if repo_url:
+    # Step 1: ensure repo is indexed (only if GITHUB_TOKEN is available)
+    if repo_url and os.getenv("GITHUB_TOKEN"):
         status = await ingest_repo(repo_url)
         if status not in ("ready", "indexing", "ok"):
             post_message(
@@ -107,7 +107,6 @@ async def _handle_query(
                 thread_ts=thread_ts,
             )
             return
-        # If it's a first-time index, wait for it to complete
         if status == "indexing":
             post_message(
                 channel,
