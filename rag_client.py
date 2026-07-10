@@ -1,14 +1,34 @@
 import os
 import httpx
 
-RAG_URL = os.environ["RAG_BACKEND_URL"].rstrip("/") + "/query"
+RAG_BASE = os.environ["RAG_BACKEND_URL"].rstrip("/")
+
+
+async def ingest_repo(repo_url: str) -> str:
+    async with httpx.AsyncClient(timeout=120) as client:
+        resp = await client.post(
+            f"{RAG_BASE}/ingest",
+            json={
+                "repo_url": repo_url,
+                "github_token": os.getenv("GITHUB_TOKEN"),
+            },
+        )
+        data = resp.json()
+        return data.get("status", "error")
+
+
+async def ingest_status(repo_name: str) -> str:
+    async with httpx.AsyncClient(timeout=30) as client:
+        resp = await client.get(f"{RAG_BASE}/ingest/status/{repo_name}")
+        data = resp.json()
+        return data.get("status", "unknown")
 
 
 async def ask_rag(question: str, target_repo: str, session_id: str) -> str:
     async with httpx.AsyncClient(timeout=120) as client:
         async with client.stream(
             "POST",
-            RAG_URL,
+            f"{RAG_BASE}/query",
             json={
                 "question": question,
                 "target_repo": target_repo,

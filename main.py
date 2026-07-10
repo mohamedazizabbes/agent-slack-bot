@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 import re
@@ -9,7 +10,7 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import PlainTextResponse
 
 from slack_client import verify_signature, post_message
-from rag_client import ask_rag
+from rag_client import ingest_repo, ingest_status, ask_rag
 
 load_dotenv()
 
@@ -56,10 +57,8 @@ async def slack_events(request: Request):
         channel = event["channel"]
         thread_ts = event.get("ts")
 
-        # Strip bot mention (<@U12345>)
         text = re.sub(r"<@\w+>", "", text).strip()
 
-        # Extract /repo_name from anywhere in the message
         m = re.search(r"/(\S+)", text)
         if not m:
             known = ", ".join(f"/{k}" for k in _load_repos())
@@ -77,22 +76,50 @@ async def slack_events(request: Request):
             post_message(channel, f"Unknown repo /{raw_repo}. Known: {known}", thread_ts=thread_ts)
             return {"ok": True}
 
+        repo_url = entry.get("url") if isinstance(entry, dict) else None
         qdrant_name = entry.get("qdrant_name") if isinstance(entry, dict) else entry
 
-        # Remove /repo_name token from text to get the question
         question = re.sub(r"/\S+", "", text, count=1).strip()
-
         session_id = f"slack:{channel}:{thread_ts or uuid.uuid4().hex}"
 
-        import asyncio
-
-        asyncio.create_task(_handle_query(channel, question, qdrant_name, session_id, thread_ts))
+        asyncio.create_task(
+            _handle_query(channel, question, qdrant_name, repo_url, session_id, thread_ts)
+        )
 
     return {"ok": True}
 
 
 async def _handle_query(
-    channel: str, question: str, target_repo: str, session_id: str, thread_ts: str | None
+    channel: str,
+    question: str,
+    target_repo: str,
+    repo_url: str | None,
+    session_id: str,
+    thread_ts: str | None,
 ):
+    # Step 1: ensure repo is indexed
+    if repo_url:
+        status = await ingest_repo(repo_url)
+        if status not in ("ready", "indexing", "ok"):
+            post_message(
+                channel,
+                f"Failed to index {target_repo} (status: {status}). Try again later.",
+                thread_ts=thread_ts,
+            )
+            return
+        # If it's a first-time index, wait for it to complete
+        if status == "indexing":
+            post_message(
+                channel,
+                f"Indexing {target_repo} for the first time — this may take ~1 minute...",
+                thread_ts=thread_ts,
+            )
+            for _ in range(30):
+                await asyncio.sleep(2)
+                s = await ingest_status(target_repo)
+                if s == "ready":
+                    break
+
+    # Step 2: ask
     answer = await ask_rag(question, target_repo, session_id)
     post_message(channel, answer, thread_ts=thread_ts)
