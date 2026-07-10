@@ -13,15 +13,21 @@ async def ingest_repo(repo_url: str) -> str:
                 "github_token": os.getenv("GITHUB_TOKEN"),
             },
         )
-        data = resp.json()
-        return data.get("status", "error")
+        try:
+            data = resp.json()
+            return data.get("status", "error")
+        except Exception:
+            return f"http_{resp.status_code}"
 
 
 async def ingest_status(repo_name: str) -> str:
     async with httpx.AsyncClient(timeout=30) as client:
         resp = await client.get(f"{RAG_BASE}/ingest/status/{repo_name}")
-        data = resp.json()
-        return data.get("status", "unknown")
+        try:
+            data = resp.json()
+            return data.get("status", "unknown")
+        except Exception:
+            return f"http_{resp.status_code}"
 
 
 async def ask_rag(question: str, target_repo: str, session_id: str) -> str:
