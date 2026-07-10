@@ -100,13 +100,6 @@ async def _handle_query(
     # Step 1: ensure repo is indexed (only if GITHUB_TOKEN is available)
     if repo_url and os.getenv("GITHUB_TOKEN"):
         status = await ingest_repo(repo_url)
-        if status not in ("ready", "indexing", "ok"):
-            post_message(
-                channel,
-                f"Failed to index {target_repo} (status: {status}). Try again later.",
-                thread_ts=thread_ts,
-            )
-            return
         if status == "indexing":
             post_message(
                 channel,
@@ -118,6 +111,9 @@ async def _handle_query(
                 s = await ingest_status(target_repo)
                 if s == "ready":
                     break
+        elif status not in ("ready", "ok"):
+            # ingest failed (cold start, etc.) — fall through to query anyway
+            pass
 
     # Step 2: ask
     answer = await ask_rag(question, target_repo, session_id)
