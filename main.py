@@ -9,8 +9,6 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import PlainTextResponse
 
-from rapidfuzz import fuzz
-
 from slack_client import verify_signature, post_message
 from rag_client import ask_rag
 
@@ -74,15 +72,9 @@ async def slack_events(request: Request):
         repos = _load_repos()
         entry = repos.get(repo_name)
         if not entry:
-            # fuzzy match: find best alias
-            candidates = ((k, fuzz.ratio(repo_name, k)) for k in repos)
-            best = max(candidates, key=lambda x: x[1])
-            if best[1] >= 60:
-                entry = repos[best[0]]
-            else:
-                known = ", ".join(f"/{k}" for k in repos)
-                post_message(channel, f"Unknown repo /{raw_repo}. Did you mean /{best[0]}? Known: {known}", thread_ts=thread_ts)
-                return {"ok": True}
+            known = ", ".join(f"/{k}" for k in repos)
+            post_message(channel, f"Unknown repo /{raw_repo}. Known: {known}", thread_ts=thread_ts)
+            return {"ok": True}
 
         qdrant_name = entry.get("qdrant_name") if isinstance(entry, dict) else entry
 
