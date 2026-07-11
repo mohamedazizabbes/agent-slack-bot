@@ -4,3 +4,4 @@ httpx
 python-dotenv
 slack-sdk
 pydantic
+rapidfuzz
