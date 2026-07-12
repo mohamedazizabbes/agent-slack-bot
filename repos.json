@@ -3,10 +3,6 @@
     "url": "https://github.com/taheroo/reservi-backend-api",
     "qdrant_name": "reservi-backend-api"
   },
-  "reservi-backend-api": {
-    "url": "https://github.com/taheroo/reservi-backend-api",
-    "qdrant_name": "reservi-backend-api"
-  },
   "code-explainer": {
     "url": "https://github.com/taheroo/code-explainer",
     "qdrant_name": "code-explainer"
@@ -48,10 +44,6 @@
     "qdrant_name": "Line-Follower-Robot"
   },
   "titanic": {
-    "url": "https://github.com/mohamedazizabbes/project_titanic",
-    "qdrant_name": "project_titanic"
-  },
-  "project-titanic": {
     "url": "https://github.com/mohamedazizabbes/project_titanic",
     "qdrant_name": "project_titanic"
   },

@@ -28,6 +28,9 @@ def _normalize(name: str) -> str:
 
 app = FastAPI(title="repo-agent-slack-bot")
 
+# Thread memory: thread_ts → {"qdrant_name": ..., "repo_name": ...}
+_thread_repos: dict[str, dict] = {}
+
 
 @app.get("/")
 async def root():
@@ -60,25 +63,35 @@ async def slack_events(request: Request):
         text = re.sub(r"<@\w+>", "", text).strip()
 
         m = re.search(r"/(\S+)", text)
-        if not m:
-            known = ", ".join(f"/{k}" for k in _load_repos())
-            msg = f"Usage: @Repo Agent /repo_name your question\nKnown repos: {known}"
-            post_message(channel, msg, thread_ts=thread_ts)
-            return {"ok": True}
 
-        raw_repo = m.group(1)
-        repo_name = _normalize(raw_repo)
+        if m:
+            raw_repo = m.group(1)
+            repo_name = _normalize(raw_repo)
 
-        repos = _load_repos()
-        entry = repos.get(repo_name)
-        if not entry:
-            known = ", ".join(f"/{k}" for k in repos)
-            post_message(channel, f"Unknown repo /{raw_repo}. Known: {known}", thread_ts=thread_ts)
-            return {"ok": True}
+            repos = _load_repos()
+            entry = repos.get(repo_name)
+            if not entry:
+                known = ", ".join(f"/{k}" for k in repos)
+                post_message(channel, f"Unknown repo /{raw_repo}. Known: {known}", thread_ts=thread_ts)
+                return {"ok": True}
 
-        qdrant_name = entry.get("qdrant_name") if isinstance(entry, dict) else entry
+            qdrant_name = entry.get("qdrant_name") if isinstance(entry, dict) else entry
+            question = re.sub(r"/\S+", "", text, count=1).strip()
 
-        question = re.sub(r"/\S+", "", text, count=1).strip()
+            # Remember this repo for the thread
+            if thread_ts:
+                _thread_repos[thread_ts] = {"qdrant_name": qdrant_name, "repo_name": repo_name}
+        else:
+            # No /repo_name — check thread memory
+            if thread_ts and thread_ts in _thread_repos:
+                qdrant_name = _thread_repos[thread_ts]["qdrant_name"]
+                question = text
+            else:
+                known = ", ".join(f"/{k}" for k in _load_repos())
+                msg = f"Usage: @Repo Agent /repo_name your question\nKnown repos: {known}"
+                post_message(channel, msg, thread_ts=thread_ts)
+                return {"ok": True}
+
         session_id = f"slack:{channel}:{thread_ts or uuid.uuid4().hex}"
 
         asyncio.create_task(_answer(channel, question, qdrant_name, session_id, thread_ts))
