@@ -1,66 +1,74 @@
 {
-  "reservi": {
-    "url": "https://github.com/taheroo/reservi-backend-api",
-    "qdrant_name": "reservi-backend-api"
-  },
-  "code-explainer": {
-    "url": "https://github.com/taheroo/code-explainer",
-    "qdrant_name": "code-explainer"
-  },
-  "ask-agents": {
-    "url": "https://github.com/taheroo/ask-agents",
-    "qdrant_name": "ask-agents"
-  },
-  "agent-slack-bot": {
+  "mohamedazizabbes/agent-slack-bot": {
     "url": "https://github.com/mohamedazizabbes/agent-slack-bot",
-    "qdrant_name": "agent-slack-bot"
+    "qdrant_name": "mohamedazizabbes/agent-slack-bot"
   },
-  "culprit": {
+  "taheroo/code-explainer": {
+    "url": "https://github.com/taheroo/code-explainer",
+    "qdrant_name": "taheroo/code-explainer"
+  },
+  "mohamedazizabbes/ask-agents": {
+    "url": "https://github.com/mohamedazizabbes/ask-agents",
+    "qdrant_name": "mohamedazizabbes/ask-agents"
+  },
+  "taheroo/reservi-backend-api": {
+    "url": "https://github.com/taheroo/reservi-backend-api",
+    "qdrant_name": "taheroo/reservi-backend-api"
+  },
+  "taheroo/ask-agents": {
+    "url": "https://github.com/taheroo/ask-agents",
+    "qdrant_name": "taheroo/ask-agents"
+  },
+  "mohamedazizabbes/CULPRIT_AINS": {
     "url": "https://github.com/mohamedazizabbes/CULPRIT_AINS",
-    "qdrant_name": "CULPRIT_AINS"
+    "qdrant_name": "mohamedazizabbes/CULPRIT_AINS"
   },
-  "culprit-youssef": {
-    "url": "https://github.com/youssef-medd/CULPRIT_AINS",
-    "qdrant_name": "CULPRIT_AINS"
-  },
-  "devpost": {
+  "mohamedazizabbes/devpost_USAII": {
     "url": "https://github.com/mohamedazizabbes/devpost_USAII",
-    "qdrant_name": "devpost_USAII"
+    "qdrant_name": "mohamedazizabbes/devpost_USAII"
   },
-  "cli-codebase": {
-    "url": "https://github.com/mohamedazizabbes/CLI_codebase",
-    "qdrant_name": "CLI_codebase"
+  "youssef-medd/CULPRIT_AINS": {
+    "url": "https://github.com/youssef-medd/CULPRIT_AINS",
+    "qdrant_name": "youssef-medd/CULPRIT_AINS"
   },
-  "robot-health": {
-    "url": "https://github.com/mohamedazizabbes/RobotHealth",
-    "qdrant_name": "RobotHealth"
+  "mohamedazizabbes/code-explainer": {
+    "url": "https://github.com/mohamedazizabbes/code-explainer",
+    "qdrant_name": "mohamedazizabbes/code-explainer"
   },
-  "telewatch": {
-    "url": "https://github.com/anascherif/TeleWatch",
-    "qdrant_name": "TeleWatch"
-  },
-  "line-follower": {
-    "url": "https://github.com/Ahmedd-Ben-Salah/Line-Follower-Robot",
-    "qdrant_name": "Line-Follower-Robot"
-  },
-  "titanic": {
-    "url": "https://github.com/mohamedazizabbes/project_titanic",
-    "qdrant_name": "project_titanic"
-  },
-  "final-rag": {
+  "mohamedazizabbes/final_rag": {
     "url": "https://github.com/mohamedazizabbes/final_rag",
-    "qdrant_name": "final_rag"
+    "qdrant_name": "mohamedazizabbes/final_rag"
   },
-  "rag-demo": {
+  "mohamedazizabbes/rag_demo": {
     "url": "https://github.com/mohamedazizabbes/rag_demo",
-    "qdrant_name": "rag_demo"
+    "qdrant_name": "mohamedazizabbes/rag_demo"
   },
-  "4-repo-demo": {
+  "mohamedazizabbes/4_repo_demo": {
     "url": "https://github.com/mohamedazizabbes/4_repo_demo",
-    "qdrant_name": "4_repo_demo"
+    "qdrant_name": "mohamedazizabbes/4_repo_demo"
   },
-  "warcast": {
+  "mohamedazizabbes/WARCAST": {
     "url": "https://github.com/mohamedazizabbes/WARCAST",
-    "qdrant_name": "WARCAST"
+    "qdrant_name": "mohamedazizabbes/WARCAST"
+  },
+  "mohamedazizabbes/CLI_codebase": {
+    "url": "https://github.com/mohamedazizabbes/CLI_codebase",
+    "qdrant_name": "mohamedazizabbes/CLI_codebase"
+  },
+  "mohamedazizabbes/RobotHealth": {
+    "url": "https://github.com/mohamedazizabbes/RobotHealth",
+    "qdrant_name": "mohamedazizabbes/RobotHealth"
+  },
+  "anascherif/TeleWatch": {
+    "url": "https://github.com/anascherif/TeleWatch",
+    "qdrant_name": "anascherif/TeleWatch"
+  },
+  "Ahmedd-Ben-Salah/Line-Follower-Robot": {
+    "url": "https://github.com/Ahmedd-Ben-Salah/Line-Follower-Robot",
+    "qdrant_name": "Ahmedd-Ben-Salah/Line-Follower-Robot"
+  },
+  "mohamedazizabbes/project_titanic": {
+    "url": "https://github.com/mohamedazizabbes/project_titanic",
+    "qdrant_name": "mohamedazizabbes/project_titanic"
   }
 }
