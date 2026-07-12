@@ -23,6 +23,10 @@
     "url": "https://github.com/mohamedazizabbes/CULPRIT_AINS",
     "qdrant_name": "CULPRIT_AINS"
   },
+  "culprit-youssef": {
+    "url": "https://github.com/youssef-medd/CULPRIT_AINS",
+    "qdrant_name": "CULPRIT_AINS"
+  },
   "devpost": {
     "url": "https://github.com/mohamedazizabbes/devpost_USAII",
     "qdrant_name": "devpost_USAII"
