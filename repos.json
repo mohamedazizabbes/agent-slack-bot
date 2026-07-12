@@ -1,74 +1,62 @@
 {
-  "mohamedazizabbes/agent-slack-bot": {
+  "agent-slack-bot": {
     "url": "https://github.com/mohamedazizabbes/agent-slack-bot",
-    "qdrant_name": "mohamedazizabbes/agent-slack-bot"
+    "qdrant_name": "agent-slack-bot"
   },
-  "taheroo/code-explainer": {
+  "code-explainer": {
     "url": "https://github.com/taheroo/code-explainer",
-    "qdrant_name": "taheroo/code-explainer"
+    "qdrant_name": "code-explainer"
   },
-  "mohamedazizabbes/ask-agents": {
-    "url": "https://github.com/mohamedazizabbes/ask-agents",
-    "qdrant_name": "mohamedazizabbes/ask-agents"
-  },
-  "taheroo/reservi-backend-api": {
-    "url": "https://github.com/taheroo/reservi-backend-api",
-    "qdrant_name": "taheroo/reservi-backend-api"
-  },
-  "taheroo/ask-agents": {
+  "ask-agents": {
     "url": "https://github.com/taheroo/ask-agents",
-    "qdrant_name": "taheroo/ask-agents"
+    "qdrant_name": "ask-agents"
   },
-  "mohamedazizabbes/CULPRIT_AINS": {
+  "reservi-backend-api": {
+    "url": "https://github.com/taheroo/reservi-backend-api",
+    "qdrant_name": "reservi-backend-api"
+  },
+  "CULPRIT_AINS": {
     "url": "https://github.com/mohamedazizabbes/CULPRIT_AINS",
-    "qdrant_name": "mohamedazizabbes/CULPRIT_AINS"
+    "qdrant_name": "CULPRIT_AINS"
   },
-  "mohamedazizabbes/devpost_USAII": {
+  "devpost_USAII": {
     "url": "https://github.com/mohamedazizabbes/devpost_USAII",
-    "qdrant_name": "mohamedazizabbes/devpost_USAII"
+    "qdrant_name": "devpost_USAII"
   },
-  "youssef-medd/CULPRIT_AINS": {
-    "url": "https://github.com/youssef-medd/CULPRIT_AINS",
-    "qdrant_name": "youssef-medd/CULPRIT_AINS"
-  },
-  "mohamedazizabbes/code-explainer": {
-    "url": "https://github.com/mohamedazizabbes/code-explainer",
-    "qdrant_name": "mohamedazizabbes/code-explainer"
-  },
-  "mohamedazizabbes/final_rag": {
+  "final_rag": {
     "url": "https://github.com/mohamedazizabbes/final_rag",
-    "qdrant_name": "mohamedazizabbes/final_rag"
+    "qdrant_name": "final_rag"
   },
-  "mohamedazizabbes/rag_demo": {
+  "rag_demo": {
     "url": "https://github.com/mohamedazizabbes/rag_demo",
-    "qdrant_name": "mohamedazizabbes/rag_demo"
+    "qdrant_name": "rag_demo"
   },
-  "mohamedazizabbes/4_repo_demo": {
+  "4_repo_demo": {
     "url": "https://github.com/mohamedazizabbes/4_repo_demo",
-    "qdrant_name": "mohamedazizabbes/4_repo_demo"
+    "qdrant_name": "4_repo_demo"
   },
-  "mohamedazizabbes/WARCAST": {
+  "WARCAST": {
     "url": "https://github.com/mohamedazizabbes/WARCAST",
-    "qdrant_name": "mohamedazizabbes/WARCAST"
+    "qdrant_name": "WARCAST"
   },
-  "mohamedazizabbes/CLI_codebase": {
+  "CLI_codebase": {
     "url": "https://github.com/mohamedazizabbes/CLI_codebase",
-    "qdrant_name": "mohamedazizabbes/CLI_codebase"
+    "qdrant_name": "CLI_codebase"
   },
-  "mohamedazizabbes/RobotHealth": {
+  "RobotHealth": {
     "url": "https://github.com/mohamedazizabbes/RobotHealth",
-    "qdrant_name": "mohamedazizabbes/RobotHealth"
+    "qdrant_name": "RobotHealth"
   },
-  "anascherif/TeleWatch": {
+  "TeleWatch": {
     "url": "https://github.com/anascherif/TeleWatch",
-    "qdrant_name": "anascherif/TeleWatch"
+    "qdrant_name": "TeleWatch"
   },
-  "Ahmedd-Ben-Salah/Line-Follower-Robot": {
+  "Line-Follower-Robot": {
     "url": "https://github.com/Ahmedd-Ben-Salah/Line-Follower-Robot",
-    "qdrant_name": "Ahmedd-Ben-Salah/Line-Follower-Robot"
+    "qdrant_name": "Line-Follower-Robot"
   },
-  "mohamedazizabbes/project_titanic": {
+  "project_titanic": {
     "url": "https://github.com/mohamedazizabbes/project_titanic",
-    "qdrant_name": "mohamedazizabbes/project_titanic"
+    "qdrant_name": "project_titanic"
   }
 }
