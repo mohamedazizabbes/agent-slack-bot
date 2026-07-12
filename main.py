@@ -26,9 +26,20 @@ def _normalize(name: str) -> str:
     return name.lower().removesuffix(".git")
 
 
+def repo_name_from_url(url: str) -> str:
+    """Derive the Qdrant repo_name from a GitHub URL.
+
+    Must match rag_backend/repo_manager.py clone_single_repo() exactly.
+    """
+    name = Path(url.rstrip("/")).name
+    if name.endswith(".git"):
+        name = name[:-4]
+    return name
+
+
 app = FastAPI(title="repo-agent-slack-bot")
 
-# Thread memory: thread_ts → {"qdrant_name": ..., "repo_name": ...}
+# Thread memory: thread_ts → {"repo_name": ..., "repo_url": ...}
 _thread_repos: dict[str, dict] = {}
 
 
@@ -66,25 +77,26 @@ async def slack_events(request: Request):
 
         if m:
             raw_repo = m.group(1)
-            repo_name = _normalize(raw_repo)
+            alias = _normalize(raw_repo)
 
             repos = _load_repos()
-            entry = repos.get(repo_name)
+            entry = repos.get(alias)
             if not entry:
                 known = ", ".join(f"/{k}" for k in repos)
                 post_message(channel, f"Unknown repo /{raw_repo}. Known: {known}", thread_ts=thread_ts)
                 return {"ok": True}
 
-            qdrant_name = entry.get("qdrant_name") if isinstance(entry, dict) else entry
+            repo_url = entry["url"] if isinstance(entry, dict) else entry
+            qdrant_name = repo_name_from_url(repo_url)
             question = re.sub(r"/\S+", "", text, count=1).strip()
 
             # Remember this repo for the thread
             if thread_ts:
-                _thread_repos[thread_ts] = {"qdrant_name": qdrant_name, "repo_name": repo_name}
+                _thread_repos[thread_ts] = {"repo_name": qdrant_name, "repo_url": repo_url}
         else:
             # No /repo_name — check thread memory
             if thread_ts and thread_ts in _thread_repos:
-                qdrant_name = _thread_repos[thread_ts]["qdrant_name"]
+                qdrant_name = _thread_repos[thread_ts]["repo_name"]
                 question = text
             else:
                 known = ", ".join(f"/{k}" for k in _load_repos())
