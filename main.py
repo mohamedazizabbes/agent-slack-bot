@@ -22,6 +22,16 @@ def _load_repos() -> dict[str, str]:
         return json.load(f)
 
 
+def _find_repo(alias: str) -> tuple[str, str] | None:
+    """Case-insensitive lookup: returns (original_key, url) or None."""
+    repos = _load_repos()
+    alias_lower = alias.lower()
+    for key, url in repos.items():
+        if key.lower() == alias_lower:
+            return key, url
+    return None
+
+
 def _normalize(name: str) -> str:
     return name.lower().removesuffix(".git")
 
@@ -79,14 +89,14 @@ async def slack_events(request: Request):
             raw_repo = m.group(1)
             alias = _normalize(raw_repo)
 
-            repos = _load_repos()
-            entry = repos.get(alias)
-            if not entry:
+            found = _find_repo(alias)
+            if not found:
+                repos = _load_repos()
                 known = ", ".join(f"/{k}" for k in repos)
                 post_message(channel, f"Unknown repo /{raw_repo}. Known: {known}", thread_ts=thread_ts)
                 return {"ok": True}
 
-            repo_url = entry["url"] if isinstance(entry, dict) else entry
+            _, repo_url = found
             qdrant_name = repo_name_from_url(repo_url)
             question = re.sub(r"/\S+", "", text, count=1).strip()
 
