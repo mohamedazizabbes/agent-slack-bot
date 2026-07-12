@@ -10,7 +10,7 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import PlainTextResponse
 
 from slack_client import verify_signature, post_message
-from rag_client import ask_rag
+from rag_client import ask_rag, ingest_repo, ingest_status
 
 load_dotenv()
 
@@ -97,6 +97,7 @@ async def slack_events(request: Request):
             # No /repo_name — check thread memory
             if thread_ts and thread_ts in _thread_repos:
                 qdrant_name = _thread_repos[thread_ts]["repo_name"]
+                repo_url = _thread_repos[thread_ts]["repo_url"]
                 question = text
             else:
                 known = ", ".join(f"/{k}" for k in _load_repos())
@@ -106,13 +107,39 @@ async def slack_events(request: Request):
 
         session_id = f"slack:{channel}:{thread_ts or uuid.uuid4().hex}"
 
-        asyncio.create_task(_answer(channel, question, qdrant_name, session_id, thread_ts))
+        asyncio.create_task(_answer(channel, question, qdrant_name, repo_url, session_id, thread_ts))
 
     return {"ok": True}
 
 
 async def _answer(
-    channel: str, question: str, target_repo: str, session_id: str, thread_ts: str | None
+    channel: str, question: str, target_repo: str, repo_url: str, session_id: str, thread_ts: str | None
 ):
+    # Ensure repo is indexed before querying
+    try:
+        status = await ingest_status(target_repo)
+    except Exception:
+        status = "unknown"
+
+    if status != "ready":
+        post_message(channel, f"Indexing `{target_repo}` for the first time — this may take a moment...", thread_ts=thread_ts)
+        try:
+            ingest_status_result = await ingest_repo(repo_url)
+        except Exception:
+            ingest_status_result = "error"
+
+        if ingest_status_result == "indexing":
+            for _ in range(40):
+                await asyncio.sleep(3)
+                try:
+                    s = await ingest_status(target_repo)
+                except Exception:
+                    s = "unknown"
+                if s == "ready":
+                    break
+                elif s.startswith("error"):
+                    post_message(channel, f"Indexing failed for `{target_repo}`: {s}", thread_ts=thread_ts)
+                    return
+
     answer = await ask_rag(question, target_repo, session_id)
     post_message(channel, answer, thread_ts=thread_ts)
