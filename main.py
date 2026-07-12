@@ -49,8 +49,8 @@ def repo_name_from_url(url: str) -> str:
 
 app = FastAPI(title="repo-agent-slack-bot")
 
-# Thread memory: thread_ts → {"repo_name": ..., "repo_url": ...}
-_thread_repos: dict[str, dict] = {}
+# Channel memory: channel → {"repo_name": ..., "repo_url": ...}
+_channel_repos: dict[str, dict] = {}
 
 
 @app.get("/")
@@ -100,14 +100,13 @@ async def slack_events(request: Request):
             qdrant_name = repo_name_from_url(repo_url)
             question = re.sub(r"/\S+", "", text, count=1).strip()
 
-            # Remember this repo for the thread
-            if thread_ts:
-                _thread_repos[thread_ts] = {"repo_name": qdrant_name, "repo_url": repo_url}
+            # Remember this repo for the channel
+            _channel_repos[channel] = {"repo_name": qdrant_name, "repo_url": repo_url}
         else:
-            # No /repo_name — check thread memory
-            if thread_ts and thread_ts in _thread_repos:
-                qdrant_name = _thread_repos[thread_ts]["repo_name"]
-                repo_url = _thread_repos[thread_ts]["repo_url"]
+            # No /repo_name — check channel memory
+            if channel in _channel_repos:
+                qdrant_name = _channel_repos[channel]["repo_name"]
+                repo_url = _channel_repos[channel]["repo_url"]
                 question = text
             else:
                 known = ", ".join(f"/{k}" for k in _load_repos())
