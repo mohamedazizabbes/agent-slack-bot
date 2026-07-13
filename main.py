@@ -2,7 +2,6 @@ import asyncio
 import json
 import os
 import re
-import time
 import uuid
 from pathlib import Path
 
@@ -53,9 +52,10 @@ app = FastAPI(title="repo-agent-slack-bot")
 # Channel memory: channel → {"repo_name": ..., "repo_url": ...}
 _channel_repos: dict[str, dict] = {}
 
-# Dedup: recently processed event timestamps ( Slack can resend events )
-_recent_events: dict[str, float] = {}
-_DEDUP_TTL = 10  # seconds
+# In-flight dedup: tracks events currently being processed.
+# Cleared on completion (success or failure), not on a timer.
+# Prevents Slack retries from spawning duplicate background tasks.
+_in_flight: set[str] = set()
 
 
 @app.get("/")
@@ -83,15 +83,10 @@ async def slack_events(request: Request):
     event = payload.get("event", {})
     if event.get("type") == "app_mention":
         event_id = event.get("client_msg_id") or f"{event.get('ts')}:{event.get('channel')}"
-        now = time.time()
-        # Skip duplicate Slack events (Slack retries on timeout)
-        if event_id in _recent_events and now - _recent_events[event_id] < _DEDUP_TTL:
+        # Skip if this event is already being processed (Slack retries on timeout)
+        if event_id in _in_flight:
             return {"ok": True}
-        _recent_events[event_id] = now
-        # Prune old entries
-        for k, v in list(_recent_events.items()):
-            if now - v > _DEDUP_TTL * 2:
-                del _recent_events[k]
+        _in_flight.add(event_id)
         text = event.get("text", "").strip()
         channel = event["channel"]
         thread_ts = event.get("ts")
@@ -131,7 +126,13 @@ async def slack_events(request: Request):
 
         session_id = f"slack:{channel}:{thread_ts or uuid.uuid4().hex}"
 
-        asyncio.create_task(_answer(channel, question, qdrant_name, repo_url, session_id, thread_ts))
+        async def _safe_answer():
+            try:
+                await _answer(channel, question, qdrant_name, repo_url, session_id, thread_ts)
+            finally:
+                _in_flight.discard(event_id)
+
+        asyncio.create_task(_safe_answer())
 
     return {"ok": True}
 
