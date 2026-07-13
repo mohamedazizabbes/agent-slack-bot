@@ -41,6 +41,9 @@ async def ask_rag(question: str, target_repo: str, session_id: str) -> str:
                 "session_id": session_id,
             },
         ) as resp:
+            if resp.status_code != 200:
+                body = await resp.aread()
+                return f"Error {resp.status_code}: {body[:200].decode(errors='replace')}"
             parts: list[str] = []
             buf = ""
             async for chunk in resp.aiter_text():

@@ -167,4 +167,6 @@ async def _answer(
                     return
 
     answer = await ask_rag(question, target_repo, session_id)
+    if not answer or not answer.strip():
+        answer = "Sorry, I couldn't generate an answer. The question might be too long — try rephrasing it more concisely."
     post_message(channel, answer, thread_ts=thread_ts)
