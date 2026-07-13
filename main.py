@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 import re
+import time
 import uuid
 from pathlib import Path
 
@@ -52,6 +53,10 @@ app = FastAPI(title="repo-agent-slack-bot")
 # Channel memory: channel → {"repo_name": ..., "repo_url": ...}
 _channel_repos: dict[str, dict] = {}
 
+# Dedup: recently processed event timestamps ( Slack can resend events )
+_recent_events: dict[str, float] = {}
+_DEDUP_TTL = 10  # seconds
+
 
 @app.get("/")
 async def root():
@@ -77,6 +82,16 @@ async def slack_events(request: Request):
 
     event = payload.get("event", {})
     if event.get("type") == "app_mention":
+        event_id = event.get("client_msg_id") or f"{event.get('ts')}:{event.get('channel')}"
+        now = time.time()
+        # Skip duplicate Slack events (Slack retries on timeout)
+        if event_id in _recent_events and now - _recent_events[event_id] < _DEDUP_TTL:
+            return {"ok": True}
+        _recent_events[event_id] = now
+        # Prune old entries
+        for k, v in list(_recent_events.items()):
+            if now - v > _DEDUP_TTL * 2:
+                del _recent_events[k]
         text = event.get("text", "").strip()
         channel = event["channel"]
         thread_ts = event.get("ts")
