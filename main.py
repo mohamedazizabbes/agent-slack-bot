@@ -146,7 +146,27 @@ async def _answer(
     except Exception:
         status = "unknown"
 
-    if status != "ready":
+    if status == "ready":
+        pass  # Already indexed, proceed to query
+    elif status == "indexing":
+        # Indexing already in progress — wait for it to finish, don't re-trigger
+        post_message(channel, f"Indexing `{target_repo}` is already in progress — waiting for it to finish...", thread_ts=thread_ts)
+        for _ in range(100):  # 100 × 3s = 5 minutes max
+            await asyncio.sleep(3)
+            try:
+                s = await ingest_status(target_repo)
+            except Exception:
+                s = "unknown"
+            if s == "ready":
+                break
+            elif s.startswith("error"):
+                post_message(channel, f"Indexing failed for `{target_repo}`: {s}", thread_ts=thread_ts)
+                return
+        else:
+            post_message(channel, f"Indexing for `{target_repo}` is taking longer than expected. Please try again in a minute.", thread_ts=thread_ts)
+            return
+    else:
+        # Status is "unknown" or error — trigger new indexing
         post_message(channel, f"Indexing `{target_repo}` for the first time — this may take a moment...", thread_ts=thread_ts)
         try:
             ingest_status_result = await ingest_repo(repo_url)
@@ -154,7 +174,7 @@ async def _answer(
             ingest_status_result = "error"
 
         if ingest_status_result == "indexing":
-            for _ in range(40):
+            for _ in range(100):  # 100 × 3s = 5 minutes max
                 await asyncio.sleep(3)
                 try:
                     s = await ingest_status(target_repo)
@@ -165,6 +185,9 @@ async def _answer(
                 elif s.startswith("error"):
                     post_message(channel, f"Indexing failed for `{target_repo}`: {s}", thread_ts=thread_ts)
                     return
+            else:
+                post_message(channel, f"Indexing for `{target_repo}` is taking longer than expected. Please try again in a minute.", thread_ts=thread_ts)
+                return
 
     answer = await ask_rag(question, target_repo, session_id)
     if not answer or not answer.strip():
